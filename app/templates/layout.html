@@ -4,13 +4,17 @@
         <meta charset="utf-8" />
         <title>{% block title %}{% endblock %}</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css')}}" />
+        <link rel="style" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     </head>
 
     <body>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
         <div class="navbar">
-            <a href="{{ url_for('home') }}" class="navbar-brand">Home</a>
+            <a href="{{ url_for('home') }}" class="navbar-item">Home</a>
             <a href="{{ url_for('about') }}" class="navbar-item">About</a>
             <a href="{{ url_for('contact') }}" class="navbar-item">Contact</a>
+            <a href="{{ url_for('show_widgets') }}" class="navbar-item">show widgets</a>
         </div>
 
         <div class="body-content">
