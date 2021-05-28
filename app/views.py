@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 from . import app
 import mysql.connector
@@ -50,11 +50,54 @@ def get_widgets():
     for result in results:
         json_data.append(dict(zip(row_headers,result)))
 
-    #json_data.extend(results)
+    cursor.close()
+
+    return json_data
+
+def web_select_specific(condition):
+    mydb = mysql.connector.connect(
+        host="mysqldb",
+        user="root",
+        password="p@ssw0rd1",
+        database="inventory"
+    )
+    cursor=mydb.cursor()
+
+    condition_query = []
+
+    for key, value in condition.items():
+        if value:
+            condition_query.append(f"{key}={value}")
+    
+    if condition_query:
+        condition_query = "WHERE " + ' AND '.join(condition_query)
+    else:
+        condition_query = ''
+
+    mysql_select_query = f"""SELECT * FROM widgets {condition_query};"""
+    print(mysql_select_query)
+
+    cursor.execute(mysql_select_query)
+
+    # this will extract row headers
+    row_headers=[x[0] for x in cursor.description]
+
+    results = cursor.fetchall()
+    json_data=[]
+    for result in results:
+        json_data.append(dict(zip(row_headers,result)))
 
     cursor.close()
 
     return json_data
+
+@app.route("/select_widgets",methods=['GET','POST'])
+def select_widgets():
+    if request.method == 'POST':
+        python_widgets = web_select_specific(request.form)
+        return render_template("show_widgets.html",widgets=python_widgets)
+    else:
+        return render_template("select_widgets.html")
 
 @app.route('/widgets')
 def show_widgets():

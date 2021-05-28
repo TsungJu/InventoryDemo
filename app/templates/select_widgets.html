@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}
+Select widgets
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h4>Select widgets</h4>
+            <form method="post" action="/select_widgets">
+                <label for="input_name">請輸入Name：</label>
+                <input type="text" id="input_name" placeholder="Input here" name="name">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

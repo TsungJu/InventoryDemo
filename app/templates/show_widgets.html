@@ -5,16 +5,28 @@ Show widgets
 {% block content %}
 <div class="container">
     <div class="row align-items-start">
-    <div class="col">
-      <p>Widgets List</p>
-    </div>
-    
-    {% for widget in widgets %}
-      <div class="row">
-        <div class="col">{{ widget.name }}</div>
-        <div class="col">{{ widget.description }}</div>
+      <div class="col">
+        <h4>Widgets List</h4>
       </div>
-    {% endfor %}
+    </div>
+    {% macro easy_row(data, tag) -%}
+      {% for widget in data %}
+      <div class="row">
+        <div class="col">
+          <{{ tag }}>{{ widget.name }}</{{ tag }}>
+        </div>
+        <div class="col">
+          <{{ tag }}>{{ widget.description }}</{{ tag }}>
+        </div>
+      </div>
+      {% endfor %}
+    {%- endmacro %}
+
+    {% set col_names = [{"name":"NAME","description":"DESCRIPTION"},] %}
+
+    {{ easy_row(col_names,"h5") }}
+
+    {{ easy_row(widgets,"p") }}
 
 </div>
 {% endblock %}

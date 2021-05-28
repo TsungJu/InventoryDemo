@@ -4,7 +4,7 @@
         <meta charset="utf-8" />
         <title>{% block title %}{% endblock %}</title>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site.css')}}" />
-        <link rel="style" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" >
     </head>
 
     <body>
@@ -14,7 +14,8 @@
             <a href="{{ url_for('home') }}" class="navbar-item">Home</a>
             <a href="{{ url_for('about') }}" class="navbar-item">About</a>
             <a href="{{ url_for('contact') }}" class="navbar-item">Contact</a>
-            <a href="{{ url_for('show_widgets') }}" class="navbar-item">show widgets</a>
+            <a href="{{ url_for('show_widgets') }}" class="navbar-item">Show widgets</a>
+            <a href="{{ url_for('select_widgets') }}" class="navbar-item">Select widgets</a>
         </div>
 
         <div class="body-content">
