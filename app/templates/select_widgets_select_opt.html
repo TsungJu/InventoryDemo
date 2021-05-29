@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}
+Select widgets select Option
+{% endblock %}
+{% block content %}
+
+{% macro easy_option_form(col_name, col_options) -%}
+    <label for="{{ col_name }}">{{ col_name }}</label>
+    <select id="{{ col_name }}" name="{{ col_name }}">
+        <option selected value=''>所有資料</option>
+        {% for col_option in col_options %}
+        <option value="'{{ col_option }}'">{{ col_option }}</option>
+        {% endfor %}
+    </select>
+{%- endmacro %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h4>Select widgets select option</h4>
+            <form method="post" action="/select_widgets_select_opt">
+            {{ easy_option_form("name",uniques[0]) }}
+            <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

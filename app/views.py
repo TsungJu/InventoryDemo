@@ -91,6 +91,47 @@ def web_select_specific(condition):
 
     return json_data
 
+def web_select_overall():
+    mydb = mysql.connector.connect(
+        host="mysqldb",
+        user="root",
+        password="p@ssw0rd1",
+        database="inventory"
+    )
+    cursor = mydb.cursor()
+
+    cursor.execute("SELECT * FROM widgets")
+
+    '''message=[]
+    while True:
+        temp = cursor.fetchmany(10)
+
+        if temp:
+            message.extend(temp)
+        else:
+            break
+    '''
+    results = cursor.fetchall()
+    
+    cursor.close()
+
+    return results
+
+def get_unique(table):
+    unique_name = {i[0] for i in table}
+    unique_description = {i[1] for i in table}
+    return sorted(unique_name),sorted(unique_description)
+
+@app.route("/select_widgets_select_opt",methods=['GET','POST'])
+def select_widgets_select_opt():
+    if request.method == 'POST':
+        python_widgets = web_select_specific(request.form)
+        return render_template("show_widgets.html",widgets=python_widgets)
+    else:
+        table = web_select_overall()
+        uniques = get_unique(table)
+        return render_template("select_widgets_select_opt.html",uniques=uniques)
+
 @app.route("/select_widgets",methods=['GET','POST'])
 def select_widgets():
     if request.method == 'POST':
