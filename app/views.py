@@ -1,10 +1,70 @@
+import json
 from datetime import datetime
 
-from flask import Flask, render_template, request
+import mysql.connector
+from flask import Flask, flash, redirect, render_template, request, url_for
+from flask_login import (LoginManager, UserMixin, current_user, login_required,
+                         login_user, logout_user)
 
 from . import app
-import mysql.connector
-import json
+
+#app.secret_key = 'eb6ecd808fcc342793df99a753ed7292'
+app.config.from_pyfile('config.py')
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.session_protection = "strong"
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please input account and password login.'
+
+class User(UserMixin):
+    pass
+
+users={'leolee':{'password':'passw0rd'}}
+
+@login_manager.user_loader
+def user_loader(enter_user):
+    if enter_user not in users:
+        return
+    user = User()
+    user.id = enter_user
+    return user
+
+@login_manager.request_loader
+def request_loader(request):
+    flask_request_user = request.form.get('user_id')
+    if flask_request_user not in users:
+        return
+
+    user = User()
+    user.id = flask_request_user
+
+    user.is_authenticated = request.form['password']==user[flask_request_user]['password']
+
+    return user
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'GET':
+        return render_template("login.html")
+    
+    input_user = request.form['user_id']
+    if (input_user in users) and (request.form['password'] == users[input_user]['password']):
+        user = User()
+        user.id = input_user
+        login_user(user)
+        flash(f'{input_user}! Welcome to join us !')
+        return redirect(url_for('home'))
+    
+    flash('Login Failed...')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    current_login_user = current_user.get_id()
+    logout_user()
+    flash(f'{current_login_user}! Welcome to comeback!')
+    return render_template("login.html")
 
 @app.route("/")
 def home():
@@ -123,6 +183,7 @@ def get_unique(table):
     return sorted(unique_name),sorted(unique_description)
 
 @app.route("/select_widgets_select_opt",methods=['GET','POST'])
+@login_required
 def select_widgets_select_opt():
     if request.method == 'POST':
         python_widgets = web_select_specific(request.form)
@@ -133,6 +194,7 @@ def select_widgets_select_opt():
         return render_template("select_widgets_select_opt.html",uniques=uniques)
 
 @app.route("/select_widgets",methods=['GET','POST'])
+@login_required
 def select_widgets():
     if request.method == 'POST':
         python_widgets = web_select_specific(request.form)
@@ -141,6 +203,7 @@ def select_widgets():
         return render_template("select_widgets.html")
 
 @app.route('/widgets')
+@login_required
 def show_widgets():
     widgets=get_widgets()
     return render_template("show_widgets.html",widgets=widgets)
