@@ -1,10 +1,13 @@
 import json
 from datetime import datetime
-
+import os
 import mysql.connector
+import psycopg2
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
+
+from app.config import DATABASE_URL_PRO
 
 from . import app
 
@@ -54,7 +57,7 @@ def login():
         user.id = input_user
         login_user(user)
         flash(f'{input_user}! Welcome to join us !')
-        return redirect(url_for('home'))
+        return redirect(url_for('home',_external=True,_scheme='https'))
     
     flash('Login Failed...')
     return render_template('login.html')
@@ -92,13 +95,8 @@ def get_data():
     return app.send_static_file("data.json")
 
 def get_widgets():
-    mydb = mysql.connector.connect(
-        host="mysqldb",
-        user="root",
-        password="p@ssw0rd1",
-        database="inventory"
-    )
-    cursor = mydb.cursor()
+    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
+    cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM widgets")
 
@@ -115,13 +113,8 @@ def get_widgets():
     return json_data
 
 def web_select_specific(condition):
-    mydb = mysql.connector.connect(
-        host="mysqldb",
-        user="root",
-        password="p@ssw0rd1",
-        database="inventory"
-    )
-    cursor=mydb.cursor()
+    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
+    cursor = conn.cursor()
 
     condition_query = []
 
@@ -152,13 +145,8 @@ def web_select_specific(condition):
     return json_data
 
 def web_select_overall():
-    mydb = mysql.connector.connect(
-        host="mysqldb",
-        user="root",
-        password="p@ssw0rd1",
-        database="inventory"
-    )
-    cursor = mydb.cursor()
+    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
+    cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM widgets")
 
@@ -191,7 +179,7 @@ def select_widgets_select_opt():
     else:
         table = web_select_overall()
         uniques = get_unique(table)
-        return render_template("select_widgets_select_opt.html",uniques=uniques)
+        return render_template("select_widgets_select_opt.html",login=current_user.is_authenticated,uniques=uniques)
 
 @app.route("/select_widgets",methods=['GET','POST'])
 @login_required
@@ -200,7 +188,7 @@ def select_widgets():
         python_widgets = web_select_specific(request.form)
         return render_template("show_widgets.html",widgets=python_widgets)
     else:
-        return render_template("select_widgets.html")
+        return render_template("select_widgets.html",login=current_user.is_authenticated)
 
 @app.route('/widgets')
 @login_required
@@ -210,27 +198,10 @@ def show_widgets():
 
 @app.route('/initdb')
 def db_init():
-    mydb = mysql.connector.connect(
-        host="mysqldb",
-        user="root",
-        password="p@ssw0rd1"
-    )
-    cursor = mydb.cursor()
+    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
+    cursor = conn.cursor()
 
-    cursor.execute("DROP DATABASE IF EXISTS inventory")
-    cursor.execute("CREATE DATABASE inventory")
-    cursor.close()
-
-    mydb = mysql.connector.connect(
-        host="mysqldb",
-        user="root",
-        password="p@ssw0rd1",
-        database="inventory"
-    )
-    cursor=mydb.cursor()
-
-    cursor.execute("DROP TABLE IF EXISTS widgets")
-    cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255))")
+    cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255));")
     #Insert multiple rows
     insert_multiple_rows_sql="INSERT INTO widgets (name,description) VALUES (%s,%s)"
     val = [
@@ -249,7 +220,8 @@ def db_init():
         ('Viola', 'Sideway 1633')
     ]
     cursor.executemany(insert_multiple_rows_sql,val)
-    mydb.commit()
+    conn.commit()
     cursor.close()
+    conn.close()
 
     return 'init database'
