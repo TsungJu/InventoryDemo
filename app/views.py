@@ -1,18 +1,12 @@
-import json
 from datetime import datetime
 import os
-import mysql.connector
-import psycopg2
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
-
-from app.config import DATABASE_URL_PRO
-
-from . import app
+from . import app, conn
 
 #app.secret_key = 'eb6ecd808fcc342793df99a753ed7292'
-app.config.from_pyfile('config.py')
+#app.config.from_pyfile('config.py')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -57,7 +51,7 @@ def login():
         user.id = input_user
         login_user(user)
         flash(f'{input_user}! Welcome to join us !')
-        return redirect(url_for('home',_external=True,_scheme='https'))
+        return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
     
     flash('Login Failed...')
     return render_template('login.html')
@@ -95,7 +89,6 @@ def get_data():
     return app.send_static_file("data.json")
 
 def get_widgets():
-    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM widgets")
@@ -113,7 +106,6 @@ def get_widgets():
     return json_data
 
 def web_select_specific(condition):
-    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
     cursor = conn.cursor()
 
     condition_query = []
@@ -145,7 +137,6 @@ def web_select_specific(condition):
     return json_data
 
 def web_select_overall():
-    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM widgets")
@@ -198,7 +189,6 @@ def show_widgets():
 
 @app.route('/initdb')
 def db_init():
-    conn = psycopg2.connect(DATABASE_URL_PRO, sslmode='require')
     cursor = conn.cursor()
 
     cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255));")
