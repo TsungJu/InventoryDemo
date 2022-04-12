@@ -1,10 +1,13 @@
+from asyncio.windows_events import NULL
 from datetime import datetime
 import os
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
-from . import app, conn
-
+import datetime
+import bcrypt
+from . import app
+import psycopg2
 #app.secret_key = 'eb6ecd808fcc342793df99a753ed7292'
 #app.config.from_pyfile('config.py')
 
@@ -17,12 +20,14 @@ login_manager.login_message = 'Please input account and password login.'
 class User(UserMixin):
     pass
 
-users={'leolee':{'password':'passw0rd'}}
+#users={'leolee':{'password':'passw0rd'}}
 
 @login_manager.user_loader
 def user_loader(enter_user):
-    if enter_user not in users:
-        return
+    #if enter_user == None:
+    #    return
+    #if enter_user not in users:
+    #    return
     user = User()
     user.id = enter_user
     return user
@@ -30,13 +35,18 @@ def user_loader(enter_user):
 @login_manager.request_loader
 def request_loader(request):
     flask_request_user = request.form.get('user_id')
-    if flask_request_user not in users:
-        return
+    
+    #if flask_request_user == None:
+    #    return
+    #if flask_request_user not in users:
+    #    return
 
     user = User()
     user.id = flask_request_user
 
-    user.is_authenticated = request.form['password']==user[flask_request_user]['password']
+    user.is_authenticated = bcrypt.checkpw(request.form['password'].encode('utf-8'), user[flask_request_user]['password'])
+        
+    #user.is_authenticated = request.form['password']==user[flask_request_user]['password']
 
     return user
 
@@ -44,17 +54,50 @@ def request_loader(request):
 def login():
     if request.method == 'GET':
         return render_template("login.html")
+
+        #access_token = create_access_token(identity=email)
+        #user.update_one({"email":email},{'$set':{"last_login":datetime.datetime.now()}})
     
-    input_user = request.form['user_id']
-    if (input_user in users) and (request.form['password'] == users[input_user]['password']):
+    user_id = request.form['user_id']
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+    cursor = conn.cursor()
+    cursor.execute("SELECT customer_password FROM customers where customer_name='"+user_id+"'")
+    customer_password=cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if bcrypt.checkpw(request.form['password'].encode('utf-8'), customer_password[0].tobytes()):
         user = User()
-        user.id = input_user
+        user.id = user_id
         login_user(user)
-        flash(f'{input_user}! Welcome to join us !')
+        flash(f'{user_id}! Welcome to join us !')
         return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
     
     flash('Login Failed...')
     return render_template('login.html')
+
+@app.route('/signup',methods=['GET','POST'])
+def signup():
+    if request.method == 'GET':
+        return render_template('signup.html')
+
+    if request.method == 'POST':
+        customer_name = request.form['user_id']
+        customer_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
+        created_on = datetime.datetime.now()
+        email = request.form['email']
+        user_info = tuple((customer_name,customer_password,email,created_on,created_on))
+        user_info_insert = list()
+        user_info_insert.append(user_info)
+        insert_customer_sql='''INSERT INTO customers (customer_name,customer_password,email,created_on,last_login) VALUES (%s,%s,%s,%s,%s)'''
+        conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+        cursor = conn.cursor()
+        cursor.executemany(insert_customer_sql,user_info_insert)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('login',_external=True,_scheme=app.config['SCHEME']))
+    
+    return render_template('signup.html')
 
 @app.route('/logout')
 def logout():
@@ -89,8 +132,8 @@ def get_data():
     return app.send_static_file("data.json")
 
 def get_widgets():
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-
     cursor.execute("SELECT * FROM widgets")
 
     # this will extract row headers
@@ -102,12 +145,13 @@ def get_widgets():
         json_data.append(dict(zip(row_headers,result)))
 
     cursor.close()
+    conn.close()
 
     return json_data
 
 def web_select_specific(condition):
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-
     condition_query = []
 
     for key, value in condition.items():
@@ -133,12 +177,13 @@ def web_select_specific(condition):
         json_data.append(dict(zip(row_headers,result)))
 
     cursor.close()
+    conn.close()
 
     return json_data
 
 def web_select_overall():
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-
     cursor.execute("SELECT * FROM widgets")
 
     '''message=[]
@@ -153,7 +198,7 @@ def web_select_overall():
     results = cursor.fetchall()
     
     cursor.close()
-
+    conn.close()
     return results
 
 def get_unique(table):
@@ -189,8 +234,8 @@ def show_widgets():
 
 @app.route('/initdb')
 def db_init():
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-
     cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255));")
     #Insert multiple rows
     insert_multiple_rows_sql="INSERT INTO widgets (name,description) VALUES (%s,%s)"
