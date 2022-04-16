@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 from datetime import datetime
 import os
 from flask import Flask, flash, redirect, render_template, request, url_for
@@ -36,8 +35,8 @@ def user_loader(enter_user):
 def request_loader(request):
     flask_request_user = request.form.get('user_id')
     
-    #if flask_request_user == None:
-    #    return
+    if flask_request_user == None:
+        return
     #if flask_request_user not in users:
     #    return
 
