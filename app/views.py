@@ -7,6 +7,8 @@ import datetime
 import bcrypt
 from . import app
 import psycopg2
+import plotly.express as px
+import pandas as pd
 #app.secret_key = 'eb6ecd808fcc342793df99a753ed7292'
 #app.config.from_pyfile('config.py')
 
@@ -60,11 +62,11 @@ def login():
     user_id = request.form['user_id']
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-    cursor.execute("SELECT customer_password FROM customers where customer_name='"+user_id+"'")
-    customer_password=cursor.fetchone()
+    cursor.execute("SELECT admin_password FROM admins where admin_name='"+user_id+"'")
+    admin_password=cursor.fetchone()
     cursor.close()
     conn.close()
-    if bcrypt.checkpw(request.form['password'].encode('utf-8'), customer_password[0].tobytes()):
+    if bcrypt.checkpw(request.form['password'].encode('utf-8'), admin_password[0].tobytes()):
         user = User()
         user.id = user_id
         login_user(user)
@@ -74,29 +76,29 @@ def login():
     flash('Login Failed...')
     return render_template('login.html')
 
-@app.route('/signup',methods=['GET','POST'])
-def signup():
+@app.route('/admin',methods=['GET','POST'])
+def admin():
     if request.method == 'GET':
-        return render_template('signup.html')
+        return render_template('admin.html')
 
     if request.method == 'POST':
-        customer_name = request.form['user_id']
-        customer_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
+        admin_name = request.form['user_id']
+        admin_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
         created_on = datetime.datetime.now()
         email = request.form['email']
-        user_info = tuple((customer_name,customer_password,email,created_on,created_on))
+        user_info = tuple((admin_name,admin_password,email,created_on,created_on))
         user_info_insert = list()
         user_info_insert.append(user_info)
-        insert_customer_sql='''INSERT INTO customers (customer_name,customer_password,email,created_on,last_login) VALUES (%s,%s,%s,%s,%s)'''
+        insert_admin_sql='''INSERT INTO admins (admin_name,admin_password,email,created_on,last_login) VALUES (%s,%s,%s,%s,%s)'''
         conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
         cursor = conn.cursor()
-        cursor.executemany(insert_customer_sql,user_info_insert)
+        cursor.executemany(insert_admin_sql,user_info_insert)
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for('login',_external=True,_scheme=app.config['SCHEME']))
+        return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
     
-    return render_template('signup.html')
+    return render_template('admin.html')
 
 @app.route('/logout')
 def logout():
@@ -112,23 +114,6 @@ def home():
 @app.route("/about/")
 def about():
     return render_template("about.html")
-
-@app.route("/contact/")
-def contact():
-    return render_template("contact.html")
-
-@app.route("/hello/")
-@app.route("/hello/<name>")
-def hello_there(name = None):
-    return render_template(
-        "hello_there.html",
-        name=name,
-        date=datetime.now()
-    )
-
-@app.route("/api/data")
-def get_data():
-    return app.send_static_file("data.json")
 
 def get_widgets():
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
@@ -205,6 +190,29 @@ def get_unique(table):
     unique_description = {i[1] for i in table}
     return sorted(unique_name),sorted(unique_description)
 
+def get_products():
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")
+
+    # this will extract row headers
+    row_headers=[x[0] for x in cursor.description]
+
+    results = cursor.fetchall()
+    json_data=[]
+    for result in results:
+        json_data.append(dict(zip(row_headers,result)))
+
+    cursor.close()
+    conn.close()
+
+    df_data = pd.DataFrame(results,columns =['product_id', 'product_name', 'product_description','product_price','product_amount'])
+    fig = px.histogram(df_data, x='product_name', y='product_amount')
+
+    #print(fig.to_html())
+
+    return json_data,fig.to_html()
+    
 @app.route("/select_widgets_select_opt",methods=['GET','POST'])
 @login_required
 def select_widgets_select_opt():
@@ -230,6 +238,37 @@ def select_widgets():
 def show_widgets():
     widgets=get_widgets()
     return render_template("show_widgets.html",widgets=widgets)
+
+@app.route('/products')
+@login_required
+def products():
+    products,products_fig=get_products()
+    return render_template("products.html",products=products,products_fig=products_fig)
+
+@app.route('/product_create',methods=['GET','POST'])
+@login_required
+def product_create():
+    if request.method == 'POST':
+        conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+        cursor = conn.cursor()
+        cursor.execute("select max(product_id) from products")
+        max_product_id=cursor.fetchone()[0]
+        product_id = max_product_id + 1
+        product_name = request.form['product_name']
+        product_description = request.form['product_description']
+        product_price = request.form['product_price']
+        product_amount = request.form['product_amount']
+        product_info = tuple((product_id,product_name,product_description,product_price,product_amount))
+        product_info_insert = list()
+        product_info_insert.append(product_info)
+        insert_product_sql='''INSERT INTO products (product_id,product_name,product_description,product_price,product_amount) VALUES (%s,%s,%s,%s,%s)'''
+        cursor.executemany(insert_product_sql,product_info_insert)
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    products,products_fig=get_products()
+    return render_template("products.html",products=products,products_fig=products_fig)
 
 @app.route('/initdb')
 def db_init():
