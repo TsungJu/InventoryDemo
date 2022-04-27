@@ -77,6 +77,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/admin',methods=['GET','POST'])
+@login_required
 def admin():
     if request.method == 'GET':
         return render_template('admin.html')
@@ -96,7 +97,7 @@ def admin():
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
+        return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
     
     return render_template('admin.html')
 
@@ -108,6 +109,7 @@ def logout():
     return render_template("login.html")
 
 @app.route("/")
+@app.route("/home")
 def home():
     return render_template("home.html")
 
@@ -266,9 +268,7 @@ def product_create():
         conn.commit()
         cursor.close()
         conn.close()
-
-    products,products_fig=get_products()
-    return render_template("products.html",products=products,products_fig=products_fig)
+        return redirect(url_for("products",login=current_user.is_authenticated))
 
 @app.route('/initdb')
 def db_init():
