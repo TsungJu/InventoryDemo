@@ -19,7 +19,9 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please input account and password login.'
 
 class User(UserMixin):
-    pass
+    @property
+    def is_admin(self):
+        return True
 
 #users={'leolee':{'password':'passw0rd'}}
 
@@ -44,9 +46,10 @@ def request_loader(request):
 
     user = User()
     user.id = flask_request_user
-
-    user.is_authenticated = bcrypt.checkpw(request.form['password'].encode('utf-8'), user[flask_request_user]['password'])
-        
+    try:
+        user.is_authenticated = bcrypt.checkpw(request.form['password'].encode('utf-8'), user[flask_request_user]['password'])
+    except TypeError:
+        return
     #user.is_authenticated = request.form['password']==user[flask_request_user]['password']
 
     return user
@@ -54,7 +57,7 @@ def request_loader(request):
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'GET':
-        return render_template("login.html")
+        return render_template("home.html")
 
         #access_token = create_access_token(identity=email)
         #user.update_one({"email":email},{'$set':{"last_login":datetime.datetime.now()}})
@@ -66,21 +69,22 @@ def login():
     admin_password=cursor.fetchone()
     cursor.close()
     conn.close()
-    if bcrypt.checkpw(request.form['password'].encode('utf-8'), admin_password[0].tobytes()):
-        user = User()
-        user.id = user_id
-        login_user(user)
-        flash(f'{user_id}! Welcome to join us !')
-        return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
-    
-    flash('Login Failed...')
-    return render_template('login.html')
+    try:
+        if bcrypt.checkpw(request.form['password'].encode('utf-8'), admin_password[0].tobytes()):
+            user = User()
+            user.id = user_id
+            login_user(user)
+            flash(f'{user_id}! Welcome to join us !')
+            return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
+    except TypeError:
+        flash('Login Failed...')
+        return render_template('home.html')
 
-@app.route('/admin',methods=['GET','POST'])
+@app.route('/account',methods=['GET','POST'])
 @login_required
-def admin():
+def account():
     if request.method == 'GET':
-        return render_template('admin.html')
+        return render_template('account.html')
 
     if request.method == 'POST':
         admin_name = request.form['user_id']
@@ -90,7 +94,10 @@ def admin():
         user_info = tuple((admin_name,admin_password,email,created_on,created_on))
         user_info_insert = list()
         user_info_insert.append(user_info)
-        insert_admin_sql='''INSERT INTO admins (admin_name,admin_password,email,created_on,last_login) VALUES (%s,%s,%s,%s,%s)'''
+        insert_admin_sql='''
+                        INSERT INTO admins (admin_name,admin_password,email,created_on,last_login)
+                        VALUES (%s,%s,%s,%s,%s)
+                        '''
         conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
         cursor = conn.cursor()
         cursor.executemany(insert_admin_sql,user_info_insert)
@@ -99,23 +106,19 @@ def admin():
         conn.close()
         return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
     
-    return render_template('admin.html')
+    return render_template('account.html')
 
 @app.route('/logout')
 def logout():
     current_login_user = current_user.get_id()
     logout_user()
     flash(f'{current_login_user}! Welcome to comeback!')
-    return render_template("login.html")
+    return render_template("home.html")
 
 @app.route("/")
 @app.route("/home")
 def home():
     return render_template("home.html")
-
-@app.route("/about/")
-def about():
-    return render_template("about.html")
 
 def get_widgets():
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
@@ -241,11 +244,11 @@ def show_widgets():
     widgets=get_widgets()
     return render_template("show_widgets.html",widgets=widgets)
 
-@app.route('/products')
+@app.route('/product')
 @login_required
-def products():
+def product():
     products,products_fig=get_products()
-    return render_template("products.html",products=products,products_fig=products_fig)
+    return render_template("product.html",products=products,products_fig=products_fig)
 
 @app.route('/product_create',methods=['GET','POST'])
 @login_required
@@ -268,7 +271,7 @@ def product_create():
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for("products",login=current_user.is_authenticated))
+        return redirect(url_for("product",_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
 
 @app.route('/initdb')
 def db_init():

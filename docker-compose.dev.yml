@@ -4,21 +4,40 @@ services:
   web:
     build:
       context: .
+    image: inventoryDemoWeb
+    container_name: inventoryDemoWeb
+    depends_on:
+      - postgresql-dev
     ports:
       - 5000:5000
+    environment:
+      - FLASK_ENV=development
     volumes:
       - ./:/app
 
-  mysqldb:
-    image: mysql
-    ports:
-      - 3306:3306
-    environment: 
-      - MYSQL_ROOT_PASSWORD=p@ssw0rd1
-    volumes:
-      - mysql:/var/lib/mysql
-      - mysql_config:/etc/mysql
+  # mysqldb:
+  #   image: mysql
+  #   ports:
+  #     - 3306:3306
+  #   environment: 
+  #     - MYSQL_ROOT_PASSWORD=p@ssw0rd1
+  #   volumes:
+  #     - mysql:/var/lib/mysql
+  #     - mysql_config:/etc/mysql
 
-volumes:
-  mysql:
-  mysql_config:
+  postgresql-dev:
+    image: postgres
+    container_name: postgresql-dev
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539
+      - POSTGRES_USER=qdmzygkpespeaf
+      - POSTGRES_DB=d87gbe1ta420fb
+    # volumes:
+    #   - postgres:/
+
+#volumes:
+  # mysql:
+  # mysql_config:
+#  postgres:

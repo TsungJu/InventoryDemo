@@ -2,7 +2,7 @@
 
 [![CI to Docker Hub](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml/badge.svg)](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml)
 
-This is inventory management and analyze System build by python and Jinja.
+This is inventory management and analyze System build by flask and bootstrap.
 
 ## Prerequisites
 
@@ -23,3 +23,13 @@ $ `export FLASK_ENV=development`
 $ `export FLASK_APP=app.webapp`
 
 $ `flask run`
+
+## Build and run me by docker
+
+$ `docker build -t inventorydemo_web_docker_env .`
+
+$ `docker run -it --rm -p 5000:5000 --name inventorydemo_web -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo_web_docker_env`
+
+## Build and run me by docker-compose
+
+$ `docker-compose up -d --build`

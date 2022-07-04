@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block title %}
+Show widgets
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row align-items-start">
+      <div class="col">
+        <h4>Products</h4>
+        <hr>
+      </div>
+    </div>
+    {{ products_fig | safe }}
+
+    <hr>
+
+    {% macro easy_row(data, tag) -%}
+      {% for product in data %}
+      <div class="row">
+        <div class="col">
+          <{{ tag }}>{{ product.product_name }}</{{ tag }}>
+        </div>
+        <div class="col">
+          <{{ tag }}>{{ product.product_description }}</{{ tag }}>
+        </div>
+        <div class="col">
+          <{{ tag }}>{{ product.product_price }}</{{ tag }}>
+        </div>
+        <div class="col">
+          <{{ tag }}>{{ product.product_amount }}</{{ tag }}>
+        </div>
+      </div>
+      {% endfor %}
+    {%- endmacro %}
+
+    {% set col_names = [{"product_name":"NAME","product_description":"DESCRIPTION","product_price":"PRICE","product_amount":"AMOUNT"},] %}
+
+    {{ easy_row(col_names,"h6") }}
+
+    {{ easy_row(products,"p") }}
+
+    <hr>
+
+    <button type="submit" class="btn btn-primary" onclick="document.getElementById('id02').style.display='block'">Product Create</button>
+    <div id="id02" class="modal">
+      <span onclick="document.getElementById('id02').style.display='none'" class="close" title="Close Modal">&times;</span>
+        <form class="modal-content animate" method="post" action="/product_create">
+          <div class="container">
+            <label for="product_name" style="color: #ffffffb7">PRODUCT NAME</label>
+            <input type="text" id="product_name" name="product_name">
+          
+            <label for="product_description" style="color: #ffffffb7">PRODUCT DESCRIPTION</label>
+            <input type="text" id="product_description" name="product_description">
+          
+            <label for="product_price" style="color: #ffffffb7">PRODUCT PRICE</label>
+            <input type="text" id="product_price" name="product_price">
+          
+            <label for="product_amount" style="color: #ffffffb7">PRODUCT AMOUNT</label>
+            <input type="text" id="product_amount" name="product_amount">
+          
+            <button type="submit" class="btn btn-primary">CREATE</button>
+          </div>
+        </form>
+      </div>
+
+    <script>
+      // Get the modal
+      var modal = document.getElementById('id02');
+      
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function(event) {
+          if (event.target == modal) {
+              modal.style.display = "none";
+          }
+      }
+    </script>
+
+</div>
+{% endblock %}
