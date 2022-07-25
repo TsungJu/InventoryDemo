@@ -4,14 +4,15 @@ services:
   web:
     build:
       context: .
-    image: inventoryDemoWeb
-    container_name: inventoryDemoWeb
+    image: inventorydemo_web_docker_env
+    container_name: inventorydemo_web
     depends_on:
-      - postgresql-dev
+      - postgres-dev
     ports:
       - 5000:5000
     environment:
       - FLASK_ENV=development
+      - FLASK_APP=app.webapp
     volumes:
       - ./:/app
 
@@ -25,19 +26,20 @@ services:
   #     - mysql:/var/lib/mysql
   #     - mysql_config:/etc/mysql
 
-  postgresql-dev:
+  postgres-dev:
     image: postgres
-    container_name: postgresql-dev
+    container_name: postgres-dev
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539
-      - POSTGRES_USER=qdmzygkpespeaf
+      - POSTGRES_PASSWORD=2651457d2882970e8d37738254173ca03839c1f14314dcaa4c6b501529379ab6
+      - POSTGRES_USER=ytkjwekbsvhpng
       - POSTGRES_DB=d87gbe1ta420fb
-    # volumes:
-    #   - postgres:/
+    volumes:
+       - postgres:/var/lib/postgresql/data
 
-#volumes:
+volumes:
+  postgres:
   # mysql:
   # mysql_config:
-#  postgres:
+  
