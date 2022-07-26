@@ -6,9 +6,19 @@ Home
 <div class="container">
     <main>
     <div class="py-5 text-center">
-        <h2>Inventory Management and Analyze System</h2>
-        <p class="lead">This is an inventory management and analyze system.</p>
+        <h2>Inventory Analyze and Management System</h2>
+        <p class="lead">This is an inventory analyze and management system.</p>
     </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
     </main>
 </div>
 {% endblock %}

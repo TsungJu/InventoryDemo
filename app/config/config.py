@@ -6,7 +6,7 @@ class DevelopmentConfig:
     SCHEME = 'http'
 
 class DevelopmentConfigDocker:
-    DATABASE_URL = 'postgres://qdmzygkpespeaf:33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539@postgresql-dev:5432/d87gbe1ta420fb'
+    DATABASE_URL = 'postgres://qdmzygkpespeaf:33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539@postgres-dev:5432/d87gbe1ta420fb'
     SECRET_KEY = 'eb6ecd808fcc342793df99a753ed7292'
     SSL_MODE = 'allow'
     SCHEME = 'http'

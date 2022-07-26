@@ -132,6 +132,31 @@
                     width: 100%;
                 }
             }
+
+            /* The alert message box */
+            .alert {
+            padding: 20px;
+            background-color: #3695f4; /* Red */
+            color: white;
+            margin-bottom: 15px;
+            }
+
+            /* The close button */
+            .closebtn {
+            margin-left: 15px;
+            color: white;
+            font-weight: bold;
+            float: right;
+            font-size: 22px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            }
+
+            /* When moving the mouse over the close button */
+            .closebtn:hover {
+            color: black;
+            }
         </style>
 
         <title>{% block title %}{% endblock %}</title>
@@ -148,10 +173,14 @@
                     </li>
                     {% if current_user.is_authenticated and current_user.is_admin %}
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ url_for('product') }}">Product</a>
+                      <a class="nav-link" href="{{ url_for('analyze') }}">Analyze</a>
                     </li>
                     <li class="nav-item">
                       <a class="nav-link" href="{{ url_for('account') }}">Account</a>
+                    </li>
+                    {% elif current_user.is_authenticated and not current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('select_widgets') }}">Select widgets</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -185,7 +214,7 @@
             </div>
             <!--<a href="{{ url_for('home') }}" class="navbar-item">Home</a>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('product') }}" class="navbar-item">Product</a>
+                <a href="{{ url_for('analyze') }}" class="navbar-item">analyze</a>
                 <a href="{{ url_for('account') }}" class="navbar-item">Account</a>
                 <a href="{{ url_for('select_widgets') }}" class="navbar-item">Select widgets</a>
                 <a href="{{ url_for('select_widgets_select_opt') }}" class="navbar-item">Select widgets select option</a>

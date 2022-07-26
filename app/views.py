@@ -19,20 +19,43 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please input account and password login.'
 
 class User(UserMixin):
+    def __init__(self):
+        self._is_admin = False
+
     @property
     def is_admin(self):
-        return True
+        return self._is_admin
+
+    @is_admin.setter
+    def is_admin(self, value):
+        self._is_admin = value
+    
+    @is_admin.deleter
+    def is_admin(self):
+        del self._is_admin
 
 #users={'leolee':{'password':'passw0rd'}}
 
 @login_manager.user_loader
 def user_loader(enter_user):
-    #if enter_user == None:
-    #    return
+    if enter_user == None:
+        return
     #if enter_user not in users:
     #    return
     user = User()
     user.id = enter_user
+
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+    cursor = conn.cursor()
+    cursor.execute("SELECT account_role FROM accounts where account_name='"+enter_user+"'")
+    account_role = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    try:
+        user.is_admin = account_role[0] == "admin"
+    except TypeError:
+        return
+
     return user
 
 @login_manager.request_loader
@@ -46,10 +69,18 @@ def request_loader(request):
 
     user = User()
     user.id = flask_request_user
+
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+    cursor = conn.cursor()
+    cursor.execute("SELECT account_password FROM accounts where account_name='"+flask_request_user+"'")
+    account_password = cursor.fetchone()
+    cursor.close()
+    conn.close()
     try:
-        user.is_authenticated = bcrypt.checkpw(request.form['password'].encode('utf-8'), user[flask_request_user]['password'])
+        user.is_authenticated = bcrypt.checkpw(request.form['password'].encode('utf-8'), account_password[0].tobytes())
     except TypeError:
         return
+    print(user.is_admin)
     #user.is_authenticated = request.form['password']==user[flask_request_user]['password']
 
     return user
@@ -65,7 +96,7 @@ def login():
     user_id = request.form['user_id']
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
     cursor = conn.cursor()
-    cursor.execute("SELECT admin_password FROM admins where admin_name='"+user_id+"'")
+    cursor.execute("SELECT account_password FROM accounts where account_name='"+user_id+"'")
     admin_password=cursor.fetchone()
     cursor.close()
     conn.close()
@@ -76,6 +107,9 @@ def login():
             login_user(user)
             flash(f'{user_id}! Welcome to join us !')
             return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
+        else:
+            flash('Login Failed...')
+            return render_template('home.html')
     except TypeError:
         flash('Login Failed...')
         return render_template('home.html')
@@ -87,20 +121,21 @@ def account():
         return render_template('account.html')
 
     if request.method == 'POST':
-        admin_name = request.form['user_id']
-        admin_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
+        account_name = request.form['user_id']
+        account_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
         created_on = datetime.datetime.now()
         email = request.form['email']
-        user_info = tuple((admin_name,admin_password,email,created_on,created_on))
+        role = request.form['role']
+        user_info = tuple((account_name,account_password,role,email,created_on,created_on))
         user_info_insert = list()
         user_info_insert.append(user_info)
-        insert_admin_sql='''
-                        INSERT INTO admins (admin_name,admin_password,email,created_on,last_login)
-                        VALUES (%s,%s,%s,%s,%s)
+        insert_account_sql='''
+                        INSERT INTO accounts (account_name,account_password,account_role,email,created_on,last_login)
+                        VALUES (%s,%s,%s,%s,%s,%s)
                         '''
         conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
         cursor = conn.cursor()
-        cursor.executemany(insert_admin_sql,user_info_insert)
+        cursor.executemany(insert_account_sql,user_info_insert)
         conn.commit()
         cursor.close()
         conn.close()
@@ -244,11 +279,11 @@ def show_widgets():
     widgets=get_widgets()
     return render_template("show_widgets.html",widgets=widgets)
 
-@app.route('/product')
+@app.route('/analyze')
 @login_required
-def product():
+def analyze():
     products,products_fig=get_products()
-    return render_template("product.html",products=products,products_fig=products_fig)
+    return render_template("analyze.html",products=products,products_fig=products_fig)
 
 @app.route('/product_create',methods=['GET','POST'])
 @login_required
@@ -271,33 +306,4 @@ def product_create():
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for("product",_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
-
-@app.route('/initdb')
-def db_init():
-    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
-    cursor = conn.cursor()
-    cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255));")
-    #Insert multiple rows
-    insert_multiple_rows_sql="INSERT INTO widgets (name,description) VALUES (%s,%s)"
-    val = [
-        ('Peter', 'Lowstreet 4'),
-        ('Amy', 'Apple st 652'),
-        ('Hannah', 'Mountain 21'),
-        ('Michael', 'Valley 345'),
-        ('Sandy', 'Ocean blvd 2'),
-        ('Betty', 'Green Grass 1'),
-        ('Richard', 'Sky st 331'),
-        ('Susan', 'One way 98'),
-        ('Vicky', 'Yellow Garden 2'),
-        ('Ben', 'Park Lane 38'),
-        ('William', 'Central st 954'),
-        ('Chuck', 'Main Road 989'),
-        ('Viola', 'Sideway 1633')
-    ]
-    cursor.executemany(insert_multiple_rows_sql,val)
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return 'init database'
+        return redirect(url_for("analyze",_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))

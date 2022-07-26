@@ -2,13 +2,17 @@
 
 [![CI to Docker Hub](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml/badge.svg)](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml)
 
-This is inventory management and analyze System build by flask and bootstrap.
+This is inventory analyze and management System build by flask and bootstrap.
 
 ## Prerequisites
 
+### Create docker network:
+
+$ `docker network create inventory-network`
+
 ### Run postgresql locally:
 
-$ `docker run -d --name postgresql-dev -e POSTGRES_PASSWORD=33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539 -e POSTGRES_USER=qdmzygkpespeaf -e POSTGRES_DB=d87gbe1ta420fb -p 5432:5432 postgres`
+$ `docker run -d --name postgres-dev --network inventory-network -e POSTGRES_PASSWORD=33c15fbd604ee23e55421bb0dae653b769e3b1222765f51ce018690bb56b3539 -e POSTGRES_USER=qdmzygkpespeaf -e POSTGRES_DB=d87gbe1ta420fb -p 5432:5432 postgres`
 
 ## Build and run me
 
@@ -28,7 +32,7 @@ $ `flask run`
 
 $ `docker build -t inventorydemo_web_docker_env .`
 
-$ `docker run -it --rm -p 5000:5000 --name inventorydemo_web -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo_web_docker_env`
+$ `docker run -it --rm -p 5000:5000 --name inventorydemo_web --network inventory-network -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo_web_docker_env`
 
 ## Build and run me by docker-compose
 
