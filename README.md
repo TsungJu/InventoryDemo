@@ -2,6 +2,8 @@
 
 [![CI to Docker Hub](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml/badge.svg)](https://github.com/TsungJu/InventoryDemo/actions/workflows/main.yml)
 
+[![Build and deploy Python app to Azure Web App - leoinventorydemo](https://github.com/TsungJu/inventory-demo/actions/workflows/master_leoinventorydemo.yml/badge.svg?branch=master)](https://github.com/TsungJu/inventory-demo/actions/workflows/master_leoinventorydemo.yml)
+
 This is inventory analyze and management System build by flask and bootstrap.
 
 ## Prerequisites
@@ -30,9 +32,9 @@ $ `flask run`
 
 ## Build and run me by docker
 
-$ `docker build -t inventorydemo_web_docker_env .`
+$ `docker build -t inventorydemo-web-docker-env .`
 
-$ `docker run -it --rm -p 5000:5000 --name inventorydemo_web --network inventory-network -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo_web_docker_env`
+$ `docker run -it --rm -p 5000:5000 --name inventorydemo-web --network inventory-network -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo-web-docker-env`
 
 ## Build and run me by docker-compose
 
