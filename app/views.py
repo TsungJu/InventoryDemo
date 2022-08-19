@@ -114,11 +114,11 @@ def login():
         flash('Login Failed...')
         return render_template('home.html')
 
-@app.route('/account',methods=['GET','POST'])
+@app.route('/manage',methods=['GET','POST'])
 @login_required
-def account():
+def manage():
     if request.method == 'GET':
-        return render_template('account.html')
+        return render_template('manage.html')
 
     if request.method == 'POST':
         account_name = request.form['user_id']
@@ -284,6 +284,11 @@ def show_widgets():
 def analyze():
     products,products_fig=get_products()
     return render_template("analyze.html",products=products,products_fig=products_fig)
+
+@app.route('/order')
+@login_required
+def order():
+    return render_template("order.html")
 
 @app.route('/product_create',methods=['GET','POST'])
 @login_required

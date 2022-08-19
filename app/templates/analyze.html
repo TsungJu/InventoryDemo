@@ -3,13 +3,32 @@
 Show widgets
 {% endblock %}
 {% block content %}
-<div class="container">
-    <div class="row align-items-start">
-      <div class="col">
-        <h4>Products</h4>
-        <hr>
-      </div>
+<div class="container-fluid">
+  <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+    <div class="position-sticky pt-3">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('analyze') }}">
+            <span data-feather="shopping-cart"></span>
+            Products
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('order') }}">
+            <span data-feather="file"></span>
+            Orders
+          </a>
+        </li>
+      </ul>
     </div>
+  </nav>
+
+  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+      <h4>Products</h4>
+      <hr>
+    </div>
+
     {{ products_fig | safe }}
 
     <hr>
@@ -39,41 +58,18 @@ Show widgets
 
     {{ easy_row(products,"p") }}
 
-    <hr>
+      <footer class="my-5 text-muted text-center text-small">
+        <hr class="my-4">
+        <p>© Leonard Inc. 2022. All Rights Reserved. </p>
+        <ul class="list-inline">
+          <li class="list-inline-item"><a href="#">Privacy</a></li>
+          <li class="list-inline-item"><a href="#">Terms</a></li>
+          <li class="list-inline-item"><a href="#">Support</a></li>
+        </ul>
+      </footer>
+  </main>
 
-    <button type="submit" class="btn btn-primary" onclick="document.getElementById('id02').style.display='block'">Product Create</button>
-    <div id="id02" class="modal">
-      <span onclick="document.getElementById('id02').style.display='none'" class="close" title="Close Modal">&times;</span>
-        <form class="modal-content animate" method="post" action="/product_create">
-          <div class="container">
-            <label for="product_name" style="color: #ffffffb7">PRODUCT NAME</label>
-            <input type="text" id="product_name" name="product_name">
-          
-            <label for="product_description" style="color: #ffffffb7">PRODUCT DESCRIPTION</label>
-            <input type="text" id="product_description" name="product_description">
-          
-            <label for="product_price" style="color: #ffffffb7">PRODUCT PRICE</label>
-            <input type="text" id="product_price" name="product_price">
-          
-            <label for="product_amount" style="color: #ffffffb7">PRODUCT AMOUNT</label>
-            <input type="text" id="product_amount" name="product_amount">
-          
-            <button type="submit" class="btn btn-primary">CREATE</button>
-          </div>
-        </form>
-      </div>
-
-    <script>
-      // Get the modal
-      var modal = document.getElementById('id02');
-      
-      // When the user clicks anywhere outside of the modal, close it
-      window.onclick = function(event) {
-          if (event.target == modal) {
-              modal.style.display = "none";
-          }
-      }
-    </script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="../static/js/dashboard.js"></script>
 
 </div>
 {% endblock %}

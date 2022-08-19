@@ -157,7 +157,24 @@
             .closebtn:hover {
             color: black;
             }
+
+            .bd-placeholder-img {
+                font-size: 1.125rem;
+                text-anchor: middle;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+
+            @media (min-width: 768px) {
+                .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+                }
+            }
         </style>
+
+        <!-- Custom styles for this template -->
+        <link href="../static/css/dashboard.css" rel="stylesheet">
 
         <title>{% block title %}{% endblock %}</title>
     </head>
@@ -165,7 +182,7 @@
     <body>
         <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 
-        <div class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <div class="navbar navbar-expand-sm bg-dark navbar-dark sticky-top">
             <div class="container-fluid">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -176,7 +193,7 @@
                       <a class="nav-link" href="{{ url_for('analyze') }}">Analyze</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ url_for('account') }}">Account</a>
+                      <a class="nav-link" href="{{ url_for('manage') }}">Manage</a>
                     </li>
                     {% elif current_user.is_authenticated and not current_user.is_admin %}
                     <li class="nav-item">
@@ -215,7 +232,7 @@
             <!--<a href="{{ url_for('home') }}" class="navbar-item">Home</a>
             {% if current_user.is_authenticated %}
                 <a href="{{ url_for('analyze') }}" class="navbar-item">analyze</a>
-                <a href="{{ url_for('account') }}" class="navbar-item">Account</a>
+                <a href="{{ url_for('manage') }}" class="navbar-item">Manage</a>
                 <a href="{{ url_for('select_widgets') }}" class="navbar-item">Select widgets</a>
                 <a href="{{ url_for('select_widgets_select_opt') }}" class="navbar-item">Select widgets select option</a>
                 <a class="nav-link" href="/logout">Logout</a>
@@ -239,15 +256,6 @@
         <div class="body-content">
             {% block content %}
             {% endblock %}
-            <footer class="my-5 text-muted text-center text-small">
-                <hr class="my-4">
-                <p>© Leonard Inc. 2022. All Rights Reserved. </p>
-                <ul class="list-inline">
-                  <li class="list-inline-item"><a href="#">Privacy</a></li>
-                  <li class="list-inline-item"><a href="#">Terms</a></li>
-                  <li class="list-inline-item"><a href="#">Support</a></li>
-                </ul>
-            </footer>
         </div>
     </body>
 </html>
