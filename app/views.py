@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import json
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
@@ -9,6 +10,7 @@ from . import app
 import psycopg2
 import plotly.express as px
 import pandas as pd
+import requests
 #app.secret_key = 'eb6ecd808fcc342793df99a753ed7292'
 #app.config.from_pyfile('config.py')
 
@@ -285,10 +287,30 @@ def analyze():
     products,products_fig=get_products()
     return render_template("analyze.html",products=products,products_fig=products_fig)
 
-@app.route('/order')
+@app.route('/factory')
 @login_required
-def order():
-    return render_template("order.html")
+def factory():
+    return render_template("factory.html")
+
+@app.route('/sale')
+@login_required
+def sale():
+    return render_template("sale.html")
+
+@app.route('/upload',methods=['GET'])
+@login_required
+def upload():
+    """
+    if request.method == 'POST':
+        f = request.files['file']
+        response = requests.post("http://"+app.config['API_SERVER']+"/api/guest/upload",files = {"file": (f.filename, f.stream, f.mimetype)})
+        print(json.loads(response.text))
+        return render_template("upload.html",filelist=json.loads(response.text))
+    else:
+        response = requests.get("http://"+app.config['API_SERVER']+"/api/guest/uploaded")
+        return render_template("upload.html",filelist=json.loads(response.text))
+    """
+    return render_template("upload.html",apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id())
 
 @app.route('/product_create',methods=['GET','POST'])
 @login_required
@@ -298,6 +320,8 @@ def product_create():
         cursor = conn.cursor()
         cursor.execute("select max(product_id) from products")
         max_product_id=cursor.fetchone()[0]
+        if max_product_id == None:
+            max_product_id = 1
         product_id = max_product_id + 1
         product_name = request.form['product_name']
         product_description = request.form['product_description']
@@ -306,7 +330,11 @@ def product_create():
         product_info = tuple((product_id,product_name,product_description,product_price,product_amount))
         product_info_insert = list()
         product_info_insert.append(product_info)
-        insert_product_sql='''INSERT INTO products (product_id,product_name,product_description,product_price,product_amount) VALUES (%s,%s,%s,%s,%s)'''
+        insert_product_sql='''
+                            INSERT INTO products
+                            (product_id,product_name,product_description,product_price,product_amount)
+                            VALUES (%s,%s,%s,%s,%s)
+                            '''
         cursor.executemany(insert_product_sql,product_info_insert)
         conn.commit()
         cursor.close()

@@ -197,8 +197,8 @@
                     </li>
                     {% elif current_user.is_authenticated and not current_user.is_admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('select_widgets') }}">Select widgets</a>
-                    </li>
+                        <a class="nav-link" href="{{ url_for('analyze') }}">Analyze</a>
+                      </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
