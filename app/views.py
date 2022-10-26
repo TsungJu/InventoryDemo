@@ -290,12 +290,12 @@ def analyze():
 @app.route('/factory')
 @login_required
 def factory():
-    return render_template("factory.html")
+    return render_template("factory.html",login=current_user.is_authenticated)
 
 @app.route('/sale')
 @login_required
 def sale():
-    return render_template("sale.html")
+    return render_template("sale.html",login=current_user.is_authenticated)
 
 @app.route('/upload',methods=['GET'])
 @login_required
