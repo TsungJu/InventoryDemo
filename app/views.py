@@ -285,7 +285,7 @@ def show_widgets():
 @login_required
 def analyze():
     products,products_fig=get_products()
-    return render_template("analyze.html",products=products,products_fig=products_fig)
+    return render_template("analyze.html",products=products,products_fig=products_fig,login=current_user.is_authenticated)
 
 @app.route('/factory')
 @login_required
