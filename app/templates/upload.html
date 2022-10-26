@@ -3,6 +3,7 @@
 Uploads
 {% endblock %}
 {% block content %}
+{% if current_user.is_authenticated %}
 <div class="container-fluid">
     <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
       <div class="position-sticky pt-3">
@@ -135,4 +136,5 @@ Uploads
       }
     </script>
 </div>
+{% endif %}
 {% endblock %}
