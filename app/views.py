@@ -120,7 +120,7 @@ def login():
 @login_required
 def manage():
     if request.method == 'GET':
-        return render_template('manage.html',scheme=app.config['SCHEME'])
+        return render_template('manage.html')
 
     if request.method == 'POST':
         account_name = request.form['user_id']
@@ -153,7 +153,7 @@ def logout():
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("home.html",scheme=app.config['SCHEME'])
+    return render_template("home.html")
 
 def get_widgets():
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
@@ -283,19 +283,19 @@ def show_widgets():
 @login_required
 def analyze():
     products,products_fig=get_products()
-    return render_template("analyze.html",products=products,products_fig=products_fig,scheme=app.config['SCHEME'])
+    return render_template("analyze.html",products=products,products_fig=products_fig)
     #return redirect(url_for('analyze',products=products,products_fig=products_fig,_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/factory')
 @login_required
 def factory():
-    return render_template("factory.html",scheme=app.config['SCHEME'])
+    return render_template("factory.html")
     #return redirect(url_for('factory',_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/sale')
 @login_required
 def sale():
-    return render_template("sale.html",scheme=app.config['SCHEME'])
+    return render_template("sale.html")
     #return redirect(url_for('sale',_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/upload',methods=['GET'])
@@ -311,7 +311,7 @@ def upload():
         response = requests.get("http://"+app.config['API_SERVER']+"/api/guest/uploaded")
         return render_template("upload.html",filelist=json.loads(response.text))
     """
-    return render_template("upload.html",apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id(),scheme=app.config['SCHEME'])
+    return render_template("upload.html",apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id())
     #return redirect(url_for('upload',apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id(),_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/product_create',methods=['GET','POST'])
