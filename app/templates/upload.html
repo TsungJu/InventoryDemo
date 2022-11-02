@@ -20,6 +20,12 @@ Uploads
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#">
+              <span data-feather="users"></span>
+              Customers
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="/factory">
               <span data-feather="home"></span>
               Factorys
@@ -77,7 +83,7 @@ Uploads
         </div>
 
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="../static/js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="../static/js/dashboard.js"></script>
     <script>
       const fileUploader = document.getElementById('file-uploader');
       let form = new FormData();
@@ -94,8 +100,21 @@ Uploads
           //document.getElementById("filelist").innerHTML = "<p>"+xhttp.responseText+"</p>";
           //document.getElementById("filelist").insertAdjacentHTML("beforeend",obj.filelist);
           for (let i = 0; i < obj.filelist.length; i++) {
-            document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr><td>'+obj.filelist[i]+'</td><td><input type=submit value=Delete class="btn btn-outline-danger"></td></tr>');
+            document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr id="'+obj.filelist[i]+'"><td>'+obj.filelist[i]+'</td><td><input type=submit value=Delete class="btn btn-outline-danger" onclick="deleteFile(\''+obj.filelist[i]+'\')">&nbsp;&nbsp;<input type=submit value=Analyze class="btn btn-outline-primary" onclick="analyzeFile(\''+obj.filelist[i]+'\')"></td></tr>');
           }
+      }
+
+      function deleteFile(filename) {
+        const xhrDelete = new XMLHttpRequest();
+        xhrDelete.open('DELETE', "{{apiServer}}/api/guest/{{ current_login_user }}/delete/"+filename);
+        xhrDelete.onload = () => {
+          if (xhrDelete.readyState === xhrDelete.DONE) {
+            if (xhrDelete.status === 200) {
+              document.getElementById(filename).remove();
+            }
+          }
+        };
+        xhrDelete.send();
       }
 
       function uploadFile() {
@@ -113,7 +132,7 @@ Uploads
           console.log("{{ current_login_user }}");
 
           // Send our FormData object; HTTP headers are set automatically
-          XHR.send(form);""
+          XHR.send(form);
 
           fileUploader.value = '';
 
@@ -123,7 +142,7 @@ Uploads
           //document.getElementById("filelist").innerHTML = "<p>"+xhttp.responseText+"</p>";
           //document.getElementById("filelist").insertAdjacentHTML("beforeend",obj.filelist);
           for (const key of form.keys()) {
-            document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr><td>'+form.get(key).name+'</td><td><input type=submit value=Delete class="btn btn-outline-danger"></td></tr>');
+            document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr id="'+form.get(key).name+'"><td>'+form.get(key).name+'</td><td><input type=submit value=Delete class="btn btn-outline-danger" onclick="deleteFile(\''+form.get(key).name+'\')">&nbsp;&nbsp;<input type=submit value=Analyze class="btn btn-outline-primary" onclick="analyzeFile(\''+form.get(key).name+'\')"></td></tr>');
             form.delete(key);
           }
           //xhttp.open("POST","{{apiServer}}/api/guest/histogram_plotly",false);
