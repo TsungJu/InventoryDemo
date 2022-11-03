@@ -108,7 +108,7 @@ def login():
             user.id = user_id
             login_user(user)
             flash(f'{user_id}! Welcome to join us !')
-            return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME']))
+            return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
         else:
             flash('Login Failed...')
             return render_template('home.html')
