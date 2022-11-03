@@ -94,14 +94,21 @@ Uploads
 
       window.onload=function(){
           const xhttp = new XMLHttpRequest();
-          xhttp.open("GET", "{{apiServer}}/api/guest/{{ current_login_user }}/uploaded", false);
+          xhttp.open("GET", "{{apiServer}}/api/guest/{{ current_login_user }}/uploaded", true);
+          xhttp.withCredentials = true;
+          xhttp.onload = () => {
+          if (xhttp.readyState === xhttp.DONE) {
+            if (xhttp.status === 200) {
+                const obj = JSON.parse(xhttp.responseText);
+                //document.getElementById("filelist").innerHTML = "<p>"+xhttp.responseText+"</p>";
+                //document.getElementById("filelist").insertAdjacentHTML("beforeend",obj.filelist);
+                for (let i = 0; i < obj.filelist.length; i++) {
+                  document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr id="'+obj.filelist[i]+'"><td>'+obj.filelist[i]+'</td><td><input type=submit value=Delete class="btn btn-outline-danger" onclick="deleteFile(\''+obj.filelist[i]+'\')">&nbsp;&nbsp;<input type=submit value=Analyze class="btn btn-outline-primary" onclick="analyzeFile(\''+obj.filelist[i]+'\')"></td></tr>');
+                }
+              }
+            }
+          };
           xhttp.send();
-          const obj = JSON.parse(xhttp.responseText);
-          //document.getElementById("filelist").innerHTML = "<p>"+xhttp.responseText+"</p>";
-          //document.getElementById("filelist").insertAdjacentHTML("beforeend",obj.filelist);
-          for (let i = 0; i < obj.filelist.length; i++) {
-            document.getElementById("filelist").insertAdjacentHTML("beforeend",'<tr id="'+obj.filelist[i]+'"><td>'+obj.filelist[i]+'</td><td><input type=submit value=Delete class="btn btn-outline-danger" onclick="deleteFile(\''+obj.filelist[i]+'\')">&nbsp;&nbsp;<input type=submit value=Analyze class="btn btn-outline-primary" onclick="analyzeFile(\''+obj.filelist[i]+'\')"></td></tr>');
-          }
       }
 
       function deleteFile(filename) {
@@ -129,6 +136,7 @@ Uploads
           //});
           // Set up our request
           XHR.open('POST', "{{apiServer}}/api/guest/{{ current_login_user }}/upload");
+          XHR.withCredentials = true;
           console.log("{{ current_login_user }}");
 
           // Send our FormData object; HTTP headers are set automatically
