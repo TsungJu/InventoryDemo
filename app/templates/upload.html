@@ -8,15 +8,15 @@ Uploads
       <div class="position-sticky pt-3">
         <ul class="nav flex-column">
           <li class="nav-item">
-            <a class="nav-link" href="/analyze">
-              <span data-feather="shopping-cart"></span>
-              Products
+            <a class="nav-link" href="/sales">
+              <span data-feather="award"></span>
+              Sales
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/sale">
-              <span data-feather="award"></span>
-              Sales
+            <a class="nav-link" href="/products">
+              <span data-feather="shopping-cart"></span>
+              Products
             </a>
           </li>
           <li class="nav-item">
@@ -95,7 +95,7 @@ Uploads
       window.onload=function(){
           const xhttp = new XMLHttpRequest();
           xhttp.open("GET", "{{apiServer}}/api/guest/{{ current_login_user }}/uploaded", true);
-          xhttp.withCredentials = true;
+          //xhttp.withCredentials = true;
           xhttp.onload = () => {
           if (xhttp.readyState === xhttp.DONE) {
             if (xhttp.status === 200) {
@@ -124,6 +124,69 @@ Uploads
         xhrDelete.send();
       }
 
+      function analyzeFile(filename) {
+        document.getElementById('id02').style.display='block';
+        document.getElementById("histogram_selected_column").innerHTML = '';
+        if (document.getElementById("histogram_plot_button") != null){
+          document.getElementById("histogram_plot_button").remove();
+        }
+        if (document.getElementById("histogram_plot_result_plot") != null){
+          document.getElementById("histogram_plot_result_plot").remove();
+        }
+        document.getElementById("histogram_selected_column").insertAdjacentHTML("beforeend",'<option disabled selected>Column</option>');
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "{{apiServer}}/api/guest/{{ current_login_user }}/info/"+filename, true);
+        //xhttp.withCredentials = true;
+        xhttp.onload = () => {
+        if (xhttp.readyState === xhttp.DONE) {
+          if (xhttp.status === 200) {
+              const obj = JSON.parse(xhttp.responseText);
+              //document.getElementById("filelist").innerHTML = "<p>"+xhttp.responseText+"</p>";
+              //document.getElementById("filelist").insertAdjacentHTML("beforeend",obj.filelist);
+              for (let i = 0; i < obj.columns.length; i++) {
+                //document.getElementById("x_csv_columns").insertAdjacentHTML("beforeend",'<a class="dropdown-item" href="#"><span data-feather="calendar"></span>'+obj.columns[i]+'</a>');
+                //document.getElementById("y_csv_columns").insertAdjacentHTML("beforeend",'<a class="dropdown-item" href="#"><span data-feather="calendar"></span>'+obj.columns[i]+'</a>');
+                document.getElementById("histogram_selected_column").insertAdjacentHTML("beforeend",'<option value="'+obj.columns[i]+'">'+obj.columns[i]+'</option>');
+              }
+              document.getElementById("histogram_selected_column").insertAdjacentHTML("afterend",'<button type="submit" class="btn btn-secondary" id="histogram_plot_button" onclick="histogram_plot(\''+filename+'\')">ploting</button>');
+            }
+          }
+        };
+        xhttp.send();
+      }
+
+      function histogram_plot(filename) {
+        if (document.getElementById("histogram_plot_result_plot") != null){
+          document.getElementById("histogram_plot_result_plot").remove();
+        }
+        const xhttp_histogram_plot = new XMLHttpRequest();
+        xhttp_histogram_plot.responseType = "arraybuffer";
+        xhttp_histogram_plot.open("POST", "{{apiServer}}/api/guest/{{ current_login_user }}/histogram_plot/"+filename, true);
+        //xhttp.withCredentials = true;
+        let histogram_plot_form = new FormData();
+        //let reader = new FileReader();
+        histogram_plot_form.append('column',document.getElementById("histogram_selected_column").value);  
+        xhttp_histogram_plot.onload = () => {
+        if (xhttp_histogram_plot.readyState === xhttp_histogram_plot.DONE) {
+          if (xhttp_histogram_plot.status === 200) {
+              //var blob = new Blob([xhttp.response]);
+              console.log(xhttp_histogram_plot.response)
+              //var img = URL.createObjectURL(blob);
+              //reader.readAsArrayBuffer(blob);
+              //reader.readAsDataURL(blob);
+              document.getElementById("histogram_plot_result").insertAdjacentHTML("beforeend",'<img src=\'data:image/png;base64,' + btoa(String.fromCharCode.apply(null, new Uint8Array(xhttp_histogram_plot.response)))+'\' id="histogram_plot_result_plot" />');
+            }
+          }
+        };
+        xhttp_histogram_plot.send(histogram_plot_form);
+        /*reader.onload = () => {
+          if (reader.readyState === 2) {
+            console.log(reader.result)
+            document.getElementById("histogram_plot_result").insertAdjacentHTML("beforeend",'<img src="'+reader.result+'" style="height:436px; width:292px" />');
+          }
+        };*/
+      }
+
       function uploadFile() {
           const XHR = new XMLHttpRequest();
           const xhttp = new XMLHttpRequest();
@@ -136,7 +199,7 @@ Uploads
           //});
           // Set up our request
           XHR.open('POST', "{{apiServer}}/api/guest/{{ current_login_user }}/upload");
-          XHR.withCredentials = true;
+          //XHR.withCredentials = true;
           console.log("{{ current_login_user }}");
 
           // Send our FormData object; HTTP headers are set automatically
