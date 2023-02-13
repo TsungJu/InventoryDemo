@@ -34,8 +34,14 @@ $ `flask run`
 
 $ `docker build -t inventorydemo-web-docker-env .`
 
-$ `docker run -it --rm -p 5000:5000 --name inventorydemo-web --network inventory-network -v %cd%:/opt/app -w /opt/app -e FLASK_APP=app.webapp inventorydemo-web-docker-env`
+$ `docker run -it --rm -p 5000:5000 --name inventorydemo-web --network inventory-network -v %cd%:/app -e TZ=Asia/Taipei inventorydemo-web-docker-env`
 
 ## Build and run me by docker-compose
 
 $ `docker-compose up -d --build`
+
+### Run OWASP ZAP to web scan
+
+$ `docker run -it --rm -u zap -p 8080:8080 -p 8090:8090 -i owasp/zap2docker-stable zap-webswing.sh`
+
+Use zap ui (http://localhost:8080/zap/) to web scan
