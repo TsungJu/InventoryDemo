@@ -4,41 +4,74 @@ SignUp
 {% endblock %}
 {% block content %}
 <div class="container">
-  <div class="row align-items-start">
+  <div class="row">
     <div class="col">
       <h4>Account</h4>
-      <hr>
     </div>
+    <div class="col">
+    </div>
+    <div class="col">
+      <button type="submit" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('id03').style.display='block'">+ Account Create</button>
+    </div>
+    <hr>
   </div>
 
-  <button type="submit" class="btn btn-primary" onclick="document.getElementById('id03').style.display='block'">Account Create</button>
-      <div id="id03" class="modal">
-        <span onclick="document.getElementById('id03').style.display='none'" class="close" title="Close Modal">&times;</span>
-          <form class="modal-content animate" method="post" action="/manage">
-            <div class="container">
-              <label for="user_id" style="color: #ffffffb7">USER ID</label>
-              <input type="text" id="user_id" name="user_id">
-            
-              <label for="password" style="color: #ffffffb7">PASSWORD</label>
-              <input type="password" id="password" name="password">
-            
-              <label for="email" style="color: #ffffffb7">EMAIL</label>
-              <input type="text" id="email" name="email">
+  {% macro easy_row(data, tag) -%}
+    {% for account in data %}
+    <div class="row">
+      <div class="col">
+        <{{ tag }}>{{ account.account_name }}</{{ tag }}>
+      </div>
+      <div class="col">
+        <{{ tag }}>{{ account.account_role }}</{{ tag }}>
+      </div>
+      <div class="col">
+        <{{ tag }}>{{ account.email }}</{{ tag }}>
+      </div>
+      <div class="col">
+        <{{ tag }}>{{ account.created_on }}</{{ tag }}>
+      </div>
+      <div class="col">
+        <{{ tag }}>{{ account.last_login }}</{{ tag }}>
+      </div>
+    </div>
+    {% endfor %}
+  {%- endmacro %}
 
-              <label style="color: #ffffffb7">ROLE</label>
-              <div class="form-check">
-                <input id="user" name="role" type="radio" class="form-check-input" value="user" checked>
-                <label class="form-check-label" for="user" style="color: #ffffffb7">USER</label>
-              </div>
-              <div class="form-check">
-                <input id="admin" name="role" type="radio" class="form-check-input" value="admin">
-                <label class="form-check-label" for="admin" style="color: #ffffffb7">ADMIN</label>
-              </div>
-            
-              <button type="submit" class="btn btn-primary">CREATE</button>
-            </div>
-          </form>
+  {% set col_names = [{"account_name":"NAME","account_role":"ROLE","email":"EMAIL","created_on":"CREATE ON","last_login":"LAST LOGIN"},] %}
+
+  {{ easy_row(col_names,"h6") }}
+
+  {{ easy_row(accounts,"p") }}
+  <!-- <tr><td>'+obj.filelist[i]+'</td><td><input type=submit value=Delete class="btn btn-outline-danger" onclick="deleteFile(\''+obj.filelist[i]+'\')">&nbsp;&nbsp;<input type=submit value=Analyze class="btn btn-outline-primary" onclick="analyzeFile(\''+obj.filelist[i]+'\')"></td></tr> -->
+  
+  <div id="id03" class="modal">
+    <span onclick="document.getElementById('id03').style.display='none'" class="close" title="Close Modal">&times;</span>
+      <form class="modal-content" method="post" action="/manage">
+        <div class="container">
+          <label for="user_id" style="color: #ffffffb7">USER ID</label>
+          <input type="text" id="user_id" name="user_id">
+        
+          <label for="password" style="color: #ffffffb7">PASSWORD</label>
+          <input type="password" id="password" name="password">
+        
+          <label for="email" style="color: #ffffffb7">EMAIL</label>
+          <input type="text" id="email" name="email">
+
+          <label style="color: #ffffffb7">ROLE</label>
+          <div class="form-check">
+            <input id="user" name="role" type="radio" class="form-check-input" value="user" checked>
+            <label class="form-check-label" for="user" style="color: #ffffffb7">USER</label>
+          </div>
+          <div class="form-check">
+            <input id="admin" name="role" type="radio" class="form-check-input" value="admin">
+            <label class="form-check-label" for="admin" style="color: #ffffffb7">ADMIN</label>
+          </div>
+        
+          <button type="submit" class="btn btn-primary">CREATE</button>
         </div>
+      </form>
+    </div>
 
         <p></p>
 
@@ -52,7 +85,7 @@ SignUp
         <button type="submit" class="btn btn-primary" onclick="document.getElementById('id02').style.display='block'">Product Create</button>
         <div id="id02" class="modal">
           <span onclick="document.getElementById('id02').style.display='none'" class="close" title="Close Modal">&times;</span>
-            <form class="modal-content animate" method="post" action="/product_create">
+            <form class="modal-content" method="post" action="/product_create">
               <div class="container">
                 <label for="product_name" style="color: #ffffffb7">PRODUCT NAME</label>
                 <input type="text" id="product_name" name="product_name">

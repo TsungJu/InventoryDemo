@@ -190,14 +190,17 @@
                     </li>
                     {% if current_user.is_authenticated and current_user.is_admin %}
                     <li class="nav-item">
-                      <a class="nav-link" href="/analyze">Analyze</a>
+                      <a class="nav-link" href="/sales">Analyze</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alert">Alert</a>
+                      </li>
                     <li class="nav-item">
                       <a class="nav-link" href="/manage">Manage</a>
                     </li>
                     {% elif current_user.is_authenticated and not current_user.is_admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/analyze">Analyze</a>
+                        <a class="nav-link" href="/sales">Analyze</a>
                       </li>
                     {% endif %}
                 </ul>
@@ -213,7 +216,7 @@
                         <div id="id01" class="modal">
                             <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
 
-                            <form class="modal-content animate" method="post" action="/login">
+                            <form class="modal-content" method="post" action="/login">
                                 <div class="container">
                                     <label for="user_id">USER_ID</label>
                                     <input type="text" id="user_id" name="user_id">
@@ -231,7 +234,7 @@
             </div>
             <!--<a href="{{ url_for('home') }}" class="navbar-item">Home</a>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('analyze') }}" class="navbar-item">analyze</a>
+                <a href="{{ url_for('sales') }}" class="navbar-item">analyze</a>
                 <a href="{{ url_for('manage') }}" class="navbar-item">Manage</a>
                 <a href="{{ url_for('select_widgets') }}" class="navbar-item">Select widgets</a>
                 <a href="{{ url_for('select_widgets_select_opt') }}" class="navbar-item">Select widgets select option</a>
@@ -239,16 +242,46 @@
             {% else %}
                 <a class="nav-link" href="/login">Login</a>
             {% endif %}-->
+            <div id="id02" class="modal">
+                <span onclick="document.getElementById('id02').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <div class="modal-content">
+                    <div class="container">
+                        <label for="histogram_plotly">Histogram Plotly</label>
+                        <!-- <div class="dropdown d-grid gap-2 col-2 mx-auto">
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" id="x_selected" data-bs-toggle="dropdown" aria-expanded="false" onclick="x_dropdown_onclick()">
+                                X
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="x_csv_columns">
+                                <a class="dropdown-item" href="#"><span data-feather="calendar"></span>This month</a>
+                            </div>
+                        </div>
+                        <div class="dropdown d-grid gap-2 col-2 mx-auto">
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"  data-bs-toggle="dropdown" aria-expanded="false" onclick="y_dropdown_onclick()">
+                                <span data-feather="calendar" id="y_selected"></span>Y
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="y_csv_columns">
+                            <a class="dropdown-item" href="#"><span data-feather="calendar"></span>This month</a>
+                            </div>
+                        </div> -->
+                        <div class="container"><select class="form-select form-select-sm" aria-label="Default select example" id="histogram_selected_column">
+                        </select></div>
+                        <div id="histogram_plot_result"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script>
             // Get the modal
             var modal = document.getElementById('id01');
-            
+            var modal2 = document.getElementById('id02');
             // When the user clicks anywhere outside of the modal, close it
             window.onclick = function(event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
+                }
+                if (event.target == modal2) {
+                    modal2.style.display = "none";
                 }
             }
         </script>            

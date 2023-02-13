@@ -4,7 +4,7 @@ import json
 from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
-import datetime
+import datetime,time
 import bcrypt
 from . import app
 import psycopg2
@@ -94,38 +94,82 @@ def login():
 
         #access_token = create_access_token(identity=email)
         #user.update_one({"email":email},{'$set':{"last_login":datetime.datetime.now()}})
-    
-    user_id = request.form['user_id']
-    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
-    cursor = conn.cursor()
-    cursor.execute("SELECT account_password FROM accounts where account_name='"+user_id+"'")
-    admin_password=cursor.fetchone()
-    cursor.close()
-    conn.close()
-    try:
-        if bcrypt.checkpw(request.form['password'].encode('utf-8'), admin_password[0].tobytes()):
-            user = User()
-            user.id = user_id
-            login_user(user)
-            flash(f'{user_id}! Welcome to join us !')
-            return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
-        else:
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        conn = None
+        try:
+            conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+            cursor = conn.cursor()
+            sql = """ SELECT account_password
+                    FROM accounts
+                    where account_name=%s """
+            cursor.execute("SELECT account_password FROM accounts where account_name='"+user_id+"'")
+            # cursor.execute(sql,str(user_id))
+            admin_password=cursor.fetchone()
+            print(admin_password)
+            # cursor.close()
+            # conn.close()
+            if bcrypt.checkpw(request.form['password'].encode('utf-8'), admin_password[0].tobytes()):
+                user = User()
+                user.id = user_id
+                login_user(user)
+                flash(f'{user_id}! Welcome to join us !')
+                cursor.execute("UPDATE accounts SET last_login=\'"+str(datetime.datetime.now())+"\' where account_name='"+user_id+"'")
+                conn.commit()
+                cursor.close()
+                return redirect(url_for('home',_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
+            else:
+                flash('Login Failed...')
+                return render_template('home.html')
+        except TypeError:
             flash('Login Failed...')
             return render_template('home.html')
-    except TypeError:
-        flash('Login Failed...')
-        return render_template('home.html')
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        finally:
+            if conn is not None:
+                print("Close db connect!")
+                conn.close()
+
+def get_accounts():
+    conn = None
+    try:
+        conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+        cursor = conn.cursor()
+        sql = """ SELECT *
+                FROM accounts """
+        cursor.execute(sql)
+
+        # this will extract row headers
+        row_headers=[x[0] for x in cursor.description]
+
+        results = cursor.fetchall()
+        json_data=[]
+        for result in results:
+            json_data.append(dict(zip(row_headers,result)))
+
+        cursor.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+    finally:
+        if conn is not None:
+            print("Close db connect!")
+            conn.close()
+
+    return json_data
 
 @app.route('/manage',methods=['GET','POST'])
 @login_required
 def manage():
     if request.method == 'GET':
-        return render_template('manage.html')
+        accounts=get_accounts()
+        return render_template('manage.html',accounts=accounts)
 
     if request.method == 'POST':
         account_name = request.form['user_id']
         account_password = bcrypt.hashpw((request.form["password"]).encode('utf-8'), bcrypt.gensalt())
         created_on = datetime.datetime.now()
+        print(created_on)
         email = request.form['email']
         role = request.form['role']
         user_info = tuple((account_name,account_password,role,email,created_on,created_on))
@@ -279,12 +323,12 @@ def show_widgets():
     widgets=get_widgets()
     return render_template("show_widgets.html",widgets=widgets)
 
-@app.route('/analyze')
+@app.route('/products')
 @login_required
-def analyze():
+def products():
     products,products_fig=get_products()
-    return render_template("analyze.html",products=products,products_fig=products_fig)
-    #return redirect(url_for('analyze',products=products,products_fig=products_fig,_external=True,_scheme=app.config['SCHEME']))
+    return render_template("products.html",products=products,products_fig=products_fig)
+    #return redirect(url_for('products',products=products,products_fig=products_fig,_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/factory')
 @login_required
@@ -292,11 +336,11 @@ def factory():
     return render_template("factory.html")
     #return redirect(url_for('factory',_external=True,_scheme=app.config['SCHEME']))
 
-@app.route('/sale')
+@app.route('/sales')
 @login_required
-def sale():
-    return render_template("sale.html")
-    #return redirect(url_for('sale',_external=True,_scheme=app.config['SCHEME']))
+def sales():
+    return render_template("sales.html")
+    #return redirect(url_for('sales',_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/upload',methods=['GET'])
 @login_required
@@ -341,4 +385,4 @@ def product_create():
         conn.commit()
         cursor.close()
         conn.close()
-        return redirect(url_for("analyze",_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
+        return redirect(url_for("products",_external=True,_scheme=app.config['SCHEME'],login=current_user.is_authenticated))
