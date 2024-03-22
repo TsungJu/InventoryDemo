@@ -162,6 +162,7 @@ Uploads
         const xhttp_histogram_plot = new XMLHttpRequest();
         xhttp_histogram_plot.responseType = "arraybuffer";
         xhttp_histogram_plot.open("POST", "{{apiServer}}/api/guest/{{ current_login_user }}/histogram_plot/"+filename, true);
+        //xhttp_histogram_plot.open("POST", "{{apiServer}}/api/guest/{{ current_login_user }}/histogram_plotly/"+filename, true);
         //xhttp.withCredentials = true;
         let histogram_plot_form = new FormData();
         //let reader = new FileReader();
@@ -170,11 +171,11 @@ Uploads
         if (xhttp_histogram_plot.readyState === xhttp_histogram_plot.DONE) {
           if (xhttp_histogram_plot.status === 200) {
               //var blob = new Blob([xhttp.response]);
-              console.log(xhttp_histogram_plot.response)
               //var img = URL.createObjectURL(blob);
               //reader.readAsArrayBuffer(blob);
               //reader.readAsDataURL(blob);
               document.getElementById("histogram_plot_result").insertAdjacentHTML("beforeend",'<img src=\'data:image/png;base64,' + btoa(String.fromCharCode.apply(null, new Uint8Array(xhttp_histogram_plot.response)))+'\' id="histogram_plot_result_plot" />');
+              //document.getElementById("histogram_plot_result").insertAdjacentHTML("beforeend",xhttp_histogram_plot.responseText);
             }
           }
         };

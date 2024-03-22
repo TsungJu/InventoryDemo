@@ -4,8 +4,8 @@ services:
   web:
     build:
       context: .
-    image: inventorydemo_web_docker_env
-    container_name: inventorydemo_web
+    image: inventorydemo-web-docker-env
+    container_name: inventorydemo-web
     depends_on:
       - postgres-dev
     ports:

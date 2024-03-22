@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import json
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for, jsonify
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 import datetime,time
@@ -296,6 +296,26 @@ def get_products():
     #print(fig.to_html())
 
     return json_data,fig.to_html()
+
+@app.route("/prods",methods=['GET'])
+@login_required
+def prods():
+    conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")
+
+    # this will extract row headers
+    row_headers=[x[0] for x in cursor.description]
+
+    results = cursor.fetchall()
+    json_data=[]
+    for result in results:
+        json_data.append(dict(zip(row_headers,result)))
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(products=json_data), 200
     
 @app.route("/select_widgets_select_opt",methods=['GET','POST'])
 @login_required
@@ -327,7 +347,7 @@ def show_widgets():
 @login_required
 def products():
     products,products_fig=get_products()
-    return render_template("products.html",products=products,products_fig=products_fig)
+    return render_template("products.html", products=products, products_fig=products_fig, login=current_user.is_authenticated)
     #return redirect(url_for('products',products=products,products_fig=products_fig,_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/factory')
