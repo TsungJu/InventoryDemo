@@ -163,7 +163,7 @@ def get_accounts():
 def manage():
     if request.method == 'GET':
         accounts=get_accounts()
-        return render_template('manage.html',accounts=accounts)
+        return render_template('manage.html',accounts=accounts, login=current_user.is_authenticated)
 
     if request.method == 'POST':
         account_name = request.form['user_id']
@@ -353,13 +353,13 @@ def products():
 @app.route('/factory')
 @login_required
 def factory():
-    return render_template("factory.html")
+    return render_template("factory.html", login=current_user.is_authenticated)
     #return redirect(url_for('factory',_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/sales')
 @login_required
 def sales():
-    return render_template("sales.html")
+    return render_template("sales.html", login=current_user.is_authenticated)
     #return redirect(url_for('sales',_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/upload',methods=['GET'])
@@ -375,7 +375,7 @@ def upload():
         response = requests.get("http://"+app.config['API_SERVER']+"/api/guest/uploaded")
         return render_template("upload.html",filelist=json.loads(response.text))
     """
-    return render_template("upload.html",apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id())
+    return render_template("upload.html",apiServer=app.config['API_SERVER'], current_login_user = current_user.get_id(), login=current_user.is_authenticated)
     #return redirect(url_for('upload',apiServer=app.config['API_SERVER'],current_login_user = current_user.get_id(),_external=True,_scheme=app.config['SCHEME']))
 
 @app.route('/product_create',methods=['GET','POST'])
