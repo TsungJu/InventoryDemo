@@ -198,7 +198,7 @@
                     <li class="nav-item">
                       <a class="nav-link" href="/manage">Manage</a>
                     </li>
-                    {% elif current_user.is_authenticated and not current_user.is_admin %}
+                    {% elif current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="/sales">Analyze</a>
                       </li>
