@@ -197,7 +197,10 @@ def logout():
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("home.html")
+    if login:
+        return render_template("home.html", login = current_user.is_authenticated)
+    else:
+        return render_template("home.html")
 
 def get_widgets():
     conn = psycopg2.connect(app.config['DATABASE_URL'], sslmode=app.config['SSL_MODE'])
